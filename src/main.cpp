@@ -3,6 +3,11 @@
 #include <PubSubClient.h>
 #include <ESPmDNS.h>
 
+#define brokerClientId "5"
+#define brokerUser "myUser"
+#define brokerPasswd "myPasswd"
+
+
 /* change it with your ssid-password */
 const char *ssid = "YourWifiSSID";
 const char *password = "YourWifiPasswd";
@@ -50,7 +55,6 @@ PubSubClient client(espClient);
 long lastMsg = 0;
 char msg[20];
 int counter = 0;
-bool subscribed = false;
 
 void mqttconnect()
 {
@@ -61,7 +65,7 @@ void mqttconnect()
     /* client ID */
     String clientId = "ESP32Client";
     /* connect now */
-    if (client.connect("arduinoClient", "YourBrokerUser", "YourBrokerPasswd"))
+    if (client.connect(brokerClientId, brokerUser, brokerPasswd))
     {
       Serial.println("Sent user and pwd");
       client.subscribe("/teste", 0);
@@ -105,7 +109,7 @@ void setup()
   client.setServer("ServerAdress", 8883); //In my case, i put my server dns, ex: "example.com.br"
 
   //Remember to change this with line with your broker user and password. The client Id can be a number or a char
-  if (client.connect("arduinoClient", "YourBrokerUser", "YourBrokerPasswd"))
+  if (client.connect(brokerClientId, brokerUser, brokerPasswd))
   {
     Serial.println("Sent user and passwd");
     client.subscribe("/teste", 0);
@@ -117,18 +121,10 @@ void setup()
 
 void loop()
 {
-  if (!subscribed) //I create this because sometimes the subscribe did not work in setup(). I dont know why.
-  {
-    client.subscribe("/teste", 0);
-    subscribed = true;
-    Serial.println("it Subscribed!!!!!!!!");
-  }
-
   /* if client was disconnected then try to reconnect again */
   if (!client.connected())
   {
     mqttconnect();
-    subscribed = false;
   }
 
   /* this function will listen for incomming 
